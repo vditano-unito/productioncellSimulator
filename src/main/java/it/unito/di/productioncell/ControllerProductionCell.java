@@ -23,6 +23,9 @@ import it.unito.di.other.SupplyException;
 import it.unito.di.press.PlateException;
 import it.unito.di.press.PressException;
 import it.unito.di.robot.RobotException;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -165,7 +168,7 @@ public class ControllerProductionCell {
     private List<ImageView> imageViewsDepositBelt;
     private boolean robotMove;
     private boolean robotStart;
-    private final static Logger logger = LogManager.getLogger(ControllerProductionCell.class);
+    private final static Logger logger  = LogManager.getLogger(ControllerProductionCell.class);
     private ServerSocket serverSocket = null;
     private ExecutorService exec = null;
     private Thread thread = null;
@@ -175,7 +178,9 @@ public class ControllerProductionCell {
 
 
     @FXML
-    void initialize() {
+    void initialize()  {
+        String customLogConfig = "src/main/resources/log4j/log4j2.xml";
+        Configurator.initialize(null, customLogConfig);
 
         progress = 0.0;
         imageViewsFeedBelt = Arrays.asList(rawPlate1, rawPlate2, rawPlate3, rawPlate4, rawPlate5);
@@ -215,10 +220,24 @@ public class ControllerProductionCell {
         logger.info("[MULTI AGENT SYSTEM] Waiting for the Multi-Agent System to start");
         System.out.println("[MULTI AGENT SYSTEM] Waiting for the Multi-Agent System to start");
 
-        //ProcessBuilder MultiAgentSystem = new ProcessBuilder("cmd.exe", "/c", "gradlew run");
-        //MultiAgentSystem.directory(new File("/mas"));
-        //MultiAgentSystem.start();
-    }
+        String operatingSystem = System.getProperty("os.name").toLowerCase();
+        System.out.println("[CHECK OPERATING SYSTEM] " + operatingSystem);
+        logger.debug("[CHECK OPERATING SYSTEM] " + operatingSystem);
+
+        if(operatingSystem.contains("win")){
+
+            ProcessBuilder MultiAgentSystem = new ProcessBuilder("cmd.exe", "/c", "gradlew run");
+            MultiAgentSystem.directory(new File("src/main/resources/mas"));
+            MultiAgentSystem.start();
+        }else {
+            ProcessBuilder MultiAgentSystem = new ProcessBuilder("./gradlew", "run");
+            MultiAgentSystem.directory(new File("src/main/resources/mas"));
+            MultiAgentSystem.start();
+
+        }
+        }
+
+
 
      public  void serveClient() throws IOException {
 
